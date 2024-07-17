@@ -1,11 +1,19 @@
 {
   "Version": 1,
-  "Hash": "Kn8dYEoA0D1dGdv1VEdO9Gy4zV6xc1IBko8qjzdDkVE=",
+  "Hash": "dG0X3sw1IINkJumKIExnrfKTEqqk8nfZJCh913JfzKI=",
   "Source": "DemoPilotoV1",
   "BasePath": "_content/DemoPilotoV1",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "DemoPilotoV1\\wwwroot",
+      "Source": "DemoPilotoV1",
+      "ContentRoot": "D:\\Users\\Usuario\\Desktop\\Proyecto-Piloto\\DemoPilotoV1\\wwwroot\\",
+      "BasePath": "_content/DemoPilotoV1",
+      "Pattern": "**"
+    }
+  ],
   "Assets": []
 }

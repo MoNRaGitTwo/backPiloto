@@ -1,39 +1,30 @@
 ﻿using DemoPilotoV1.BDD;
+using DemoPilotoV1.Clases;
 using DemoPilotoV1.DTOS;
 using DemoPilotoV1.Repositorios;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace DemoPilotoV1.Controllers
 {
+    [ApiController]
+    [Route("[controller]")]
     public class ProductsController : Controller
     {
-
         private readonly BaseDeDatos _context;
         private readonly RepoProductos _repoProducto;
 
         public ProductsController(BaseDeDatos context)
         {
             _context = context;
-            _repoProducto = new RepoProductos(context); // Asegúrate de inicializar _repoProducto
-        }
-
-        public IActionResult ObtenerProductos()
-        {
-            var productos = _repoProducto.ObtenerTodosLosProductos();
-            return Ok(productos);
-        }
-
-        [HttpGet("Productos/{id}/Imagen")]
-        public IActionResult ObtenerImagenDeProducto(int id)
-        {
-            var producto = _repoProducto.ObtenerProductoPorId(id);
-
-            if (producto == null || producto.ImageData == null || producto.ImageData.Length == 0)
-                return NotFound(); // Puedes devolver otra respuesta si la imagen no está presente
-
-            return File(producto.ImageData, "image/jpeg"); // Ajusta el tipo MIME según el formato de tus imágenes
+            _repoProducto = new RepoProductos(context);
         }
 
         [HttpPost("crear")]
@@ -46,18 +37,19 @@ namespace DemoPilotoV1.Controllers
             {
                 if (nuevoProductoDto == null || nuevoProductoDto.ImagenData == null)
                 {
-                    return BadRequest("Datos del producto no válidos");
+                    return BadRequest("Datos del producto o imagen no válidos");
                 }
 
-                byte[] imagenDataBytes;
-
+                // Convertir los datos de la imagen a un array de bytes
+                byte[] imageData;
                 using (var memoryStream = new MemoryStream())
                 {
                     nuevoProductoDto.ImagenData.CopyTo(memoryStream);
-                    imagenDataBytes = memoryStream.ToArray();
+                    imageData = memoryStream.ToArray();
                 }
 
-                _repoProducto.GuardarProducto(nuevoProductoDto.Name, nuevoProductoDto.Price, imagenDataBytes);
+                // Llamar al método GuardarProducto con todos los argumentos requeridos, incluidos los datos de la imagen
+                _repoProducto.GuardarProducto(nuevoProductoDto.Name, nuevoProductoDto.Price, nuevoProductoDto.Stock, imageData, nuevoProductoDto.ImageFileName, nuevoProductoDto.CodigoQR);
 
                 return Ok(new { Message = "Producto creado exitosamente" });
             }
@@ -68,101 +60,188 @@ namespace DemoPilotoV1.Controllers
             }
         }
 
-
-
-        [HttpGet("Productos")]
-        public IActionResult GetProducts()
+        [HttpGet("TodoProductos")]
+        [SwaggerOperation("Obtiene todos los productos")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Productos obtenidos exitosamente")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Error interno del servidor")]
+        public async Task<IActionResult> ObtenerProductos()
         {
-            var products = _context.Products.ToList();
-            return Ok(products);
-        }
+            var productos = await _context.ProductsDos
+                .Include(p => p.ProveedorProductos)
+                    .ThenInclude(pp => pp.Proveedor)
+                .ToListAsync();
 
-        [HttpGet("{id}")]
-        public IActionResult GetProductById(int id)
-        {
-            var product = _context.Products.FirstOrDefault(p => p.Id == id);
-            if (product == null)
+            var productosConImagenes = productos.Select(producto =>
             {
-                return NotFound();
-            }
-            return Ok(product);
+                string imageData = string.Empty;
+                if (!string.IsNullOrEmpty(producto.ImageFileName))
+                {
+                    var imagePath = Path.Combine("D:\\Users\\Usuario\\Desktop\\IMG-Piloto", producto.ImageFileName);
+
+                    if (System.IO.File.Exists(imagePath))
+                    {
+                        // Leer los datos de la imagen como bytes
+                        byte[] imageBytes = System.IO.File.ReadAllBytes(imagePath);
+
+                        // Convertir los datos de la imagen a una cadena Base64
+                        imageData = Convert.ToBase64String(imageBytes);
+                    }
+                }
+
+                // Devolver los datos del producto con la imagen codificada en Base64
+                return new
+                {
+                    producto.Id,
+                    producto.Name,
+                    producto.Price,
+                    producto.Stock,
+                    ImageData = imageData, // Utilizar la cadena Base64 en lugar de producto.ImageData
+                    producto.ImageFileName,
+                    producto.CodigoQR,
+                    Proveedores = producto.ProveedorProductos.Select(pp => new
+                    {
+                        pp.Proveedor.Id,
+                        pp.Proveedor.Nombre
+                    })
+                };
+            }).ToList();
+
+            return Ok(productosConImagenes);
         }
 
-        // ----------------- * -----------
 
-
-        // GET: ProductsController
-        public ActionResult Index()
-        {
-            return View();
-        }
-
-        // GET: ProductsController/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-        // GET: ProductsController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: ProductsController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        [HttpDelete("Eliminar/{id}")]
+        [SwaggerOperation("Elimina un producto por ID")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Producto eliminado exitosamente")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Producto no encontrado")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Error interno del servidor")]
+        public IActionResult EliminarProducto(int id)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                var producto = _repoProducto.ObtenerProductoPorId(id);
+                if (producto == null)
+                {
+                    return NotFound("Producto no encontrado");
+                }
+
+                _repoProducto.EliminarProducto(id);
+                return Ok(new { Message = "Producto eliminado exitosamente" });
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                Console.Error.WriteLine(ex);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
             }
         }
 
-        // GET: ProductsController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: ProductsController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: ProductsController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: ProductsController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        [HttpPut("Editar/{id}")]
+        [SwaggerOperation("Edita un producto existente")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Producto editado exitosamente")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Producto no encontrado")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Datos del producto no válidos")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Error interno del servidor")]
+        public IActionResult EditarProducto(int id, [FromForm] ProductoDto productoEditadoDto)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                if (productoEditadoDto == null)
+                {
+                    return BadRequest("Datos del producto no válidos");
+                }
+
+                var productoExistente = _repoProducto.ObtenerProductoPorId(id);
+                if (productoExistente == null)
+                {
+                    return NotFound("Producto no encontrado");
+                }
+
+                byte[] imageData = null;
+                if (productoEditadoDto.ImagenData != null)
+                {
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        productoEditadoDto.ImagenData.CopyTo(memoryStream);
+                        imageData = memoryStream.ToArray();
+                    }
+                }
+
+                // Editar el producto en el repositorio
+                _repoProducto.EditarProducto(id, productoEditadoDto.Name, productoEditadoDto.Price, productoEditadoDto.Stock, imageData, productoEditadoDto.ImageFileName);
+
+                // Obtener los datos actualizados del producto
+                var productoActualizado = _repoProducto.ObtenerProductoPorId(id);
+
+                // Devolver los datos actualizados junto con el mensaje de éxito
+                return Ok(new { Message = "Producto editado exitosamente", Product = productoActualizado });
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpPut("ActualizarStock/{id}")]
+        [SwaggerOperation("Edita stock existente")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Stock editado exitosamente")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Producto no encontrado")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Datos del producto no válidos")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Error interno del servidor")]
+        public IActionResult ActualizarStock(int id, [FromBody] int nuevoStock)
+        {
+            try
+            {
+                var productoExistente = _repoProducto.ObtenerProductoPorId(id);
+                if (productoExistente == null)
+                {
+                    return NotFound("Producto no encontrado");
+                }
+
+                _repoProducto.ActualizarStock(id, nuevoStock); // Llama a ActualizarStock con los dos parámetros
+
+                productoExistente.Stock = nuevoStock; // Actualiza el stock en el objeto existente
+
+                return Ok(new { Message = "Stock actualizado exitosamente", Product = productoExistente });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        // Nuevos métodos
+
+        [HttpPost("AsociarProductoAProveedor")]
+        [SwaggerOperation("Asocia un producto a un proveedor")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Producto asociado exitosamente")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Datos no válidos")]
+        public async Task<IActionResult> AsociarProductoAProveedor(int proveedorId, int productoId)
+        {
+            try
+            {
+                await _repoProducto.AsociarProductoAProveedor(proveedorId, productoId);
+                return Ok(new { Message = "Producto asociado exitosamente" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpGet("ObtenerProductosPorProveedor/{proveedorId}")]
+        [SwaggerOperation("Obtiene productos por proveedor")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Productos obtenidos exitosamente")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Datos no válidos")]
+        public async Task<IActionResult> ObtenerProductosPorProveedor(int proveedorId)
+        {
+            try
+            {
+                var productos = await _repoProducto.ObtenerProductosPorProveedor(proveedorId);
+                return Ok(productos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
     }

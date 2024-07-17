@@ -1,6 +1,9 @@
-
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using DemoPilotoV1.BDD;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace DemoPilotoV1
 {
@@ -10,42 +13,79 @@ namespace DemoPilotoV1
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Add services to the container.
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                    options.JsonSerializerOptions.DictionaryKeyPolicy = null;
+                });
 
-            // Add services to the container.                  
-
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            // Add DbContext with MySQL
             builder.Services.AddDbContext<BaseDeDatos>(options =>
-           options.UseSqlServer(builder.Configuration.GetConnectionString("CadenaConexion")));
+                options.UseMySQL(builder.Configuration.GetConnectionString("CadenaConexion")));
+
+            // Configure CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigins",
+                    builder =>
+                    {
+                        builder.WithOrigins("http://localhost:3000", "https://396d-167-60-192-17.ngrok-free.app", "https://monragittwo.github.io")
+                               .AllowAnyMethod()
+                               .AllowAnyHeader()
+                               .AllowCredentials();
+                    });
+            });
+
+            // Add authentication (optional, adjust according to your needs)
+            builder.Services.AddAuthentication("Bearer")
+                .AddJwtBearer("Bearer", options =>
+                {
+                    options.Authority = "https://your-identity-server";
+                    options.Audience = "api1";
+                });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("ApiScope", policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim("scope", "api1");
+                });
+            });
 
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
+                app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-            //Cors
-            app.UseCors(builder =>
+            else
             {
-                builder.WithOrigins("http://localhost:3000")
-                       .AllowAnyHeader()
-                       .AllowAnyMethod();
-            });
+                app.UseExceptionHandler("/Home/Error");
+                app.UseHsts();
+            }
 
-            app.UseAuthorization();
-
-
-
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
 
+            app.UseRouting();
+
+            // Apply CORS middleware
+            app.UseCors("AllowSpecificOrigins");
+
+            // Use authentication and authorization middleware
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.MapControllers();
-
             app.Run();
         }
     }
