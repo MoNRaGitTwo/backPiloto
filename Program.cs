@@ -28,7 +28,7 @@ namespace DemoPilotoV1
                     options.JsonSerializerOptions.PropertyNamingPolicy = null;
                     options.JsonSerializerOptions.DictionaryKeyPolicy = null;
                     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;                    
-                   // options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
                 });
 
             builder.Services.AddEndpointsApiExplorer();

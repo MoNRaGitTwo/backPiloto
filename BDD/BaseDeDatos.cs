@@ -31,7 +31,16 @@ namespace DemoPilotoV1.BDD
                 .WithMany(p => p.ProveedorProductos)
                 .HasForeignKey(pp => pp.ProductoId);
 
-         
+            modelBuilder.Entity<Pedidos>()
+                .HasMany(p => p.DetallesPedidos)
+                .WithOne(d => d.Pedido)
+                .HasForeignKey(d => d.PedidoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DetallePedidos>()
+                .HasOne(d => d.Producto)
+                .WithMany()
+                .HasForeignKey(d => d.ProductoId);
         }
     }
 }
