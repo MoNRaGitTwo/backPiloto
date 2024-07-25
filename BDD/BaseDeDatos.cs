@@ -10,6 +10,8 @@ namespace DemoPilotoV1.BDD
         public DbSet<Clientes> Clientes { get; set; }
         public DbSet<Proveedores> Proveedores { get; set; }
         public DbSet<Compras> Compras { get; set; }
+        public DbSet<Pedidos> Pedidos { get; set; }
+        public DbSet<DetallePedidos> DetallesPedidos { get; set; }
         public DbSet<ProveedorProducto> ProveedorProductos { get; set; }
 
         public BaseDeDatos(DbContextOptions<BaseDeDatos> options) : base(options) { }
@@ -28,6 +30,17 @@ namespace DemoPilotoV1.BDD
                 .HasOne(pp => pp.Producto)
                 .WithMany(p => p.ProveedorProductos)
                 .HasForeignKey(pp => pp.ProductoId);
+
+            modelBuilder.Entity<Pedidos>()
+                .HasMany(p => p.DetallesPedidos)
+                .WithOne(d => d.Pedido)
+                .HasForeignKey(d => d.PedidoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DetallePedidos>()
+                .HasOne(d => d.Producto)
+                .WithMany()
+                .HasForeignKey(d => d.ProductoId);
         }
     }
 }

@@ -4,6 +4,14 @@ using Microsoft.Extensions.Hosting;
 using DemoPilotoV1.BDD;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using DemoPilotoV1.Repositorios;  // Nueva línea para importar el repositorio de pedidos
+using System.Text.Json.Serialization;
+using DemoPilotoV1.Clases;
+using DemoPilotoV1.DTOS;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
+
+
 
 namespace DemoPilotoV1
 {
@@ -19,10 +27,13 @@ namespace DemoPilotoV1
                 {
                     options.JsonSerializerOptions.PropertyNamingPolicy = null;
                     options.JsonSerializerOptions.DictionaryKeyPolicy = null;
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;                    
+                    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
                 });
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            
 
             // Add DbContext with MySQL
             builder.Services.AddDbContext<BaseDeDatos>(options =>
@@ -58,6 +69,9 @@ namespace DemoPilotoV1
                 });
             });
 
+            // Register the new repository for pedidos
+            builder.Services.AddScoped<RepoPedidos>();  // Nueva línea para agregar el repositorio de pedidos
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -73,7 +87,9 @@ namespace DemoPilotoV1
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+           
+
+        app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();

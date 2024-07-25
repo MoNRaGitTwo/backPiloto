@@ -92,3 +92,5 @@ D:\Users\Usuario\Desktop\Proyecto-Piloto\DemoPilotoV1\bin\Debug\net7.0\DemoPilot
 D:\Users\Usuario\Desktop\Proyecto-Piloto\DemoPilotoV1\bin\Debug\net7.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 D:\Users\Usuario\Desktop\Proyecto-Piloto\DemoPilotoV1\bin\Debug\net7.0\MySqlConnector.dll
 D:\Users\Usuario\Desktop\Proyecto-Piloto\DemoPilotoV1\bin\Debug\net7.0\Pomelo.EntityFrameworkCore.MySql.dll
+D:\Users\Usuario\Desktop\Proyecto-Piloto\DemoPilotoV1\bin\Debug\net7.0\AutoMapper.dll
+D:\Users\Usuario\Desktop\Proyecto-Piloto\DemoPilotoV1\bin\Debug\net7.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
