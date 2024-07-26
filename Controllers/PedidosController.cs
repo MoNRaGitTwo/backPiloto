@@ -2,6 +2,7 @@
 using DemoPilotoV1.DTOS;
 using DemoPilotoV1.Repositorios;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -17,6 +18,7 @@ public class PedidosController : ControllerBase
     }
 
     [HttpGet]
+
     public ActionResult<List<PedidoDTO>> GetPedidos()
     {
         var pedidos = _repoPedidos.ObtenerTodosLosPedidos()
@@ -69,7 +71,9 @@ public class PedidosController : ControllerBase
         return Ok(pedidoDTO);
     }
 
-    [HttpPost]
+    
+    [HttpPost("GuardarPedidos")]
+    [SwaggerOperation("Guarda los pedidos")]
     public ActionResult<PedidoDTO> GuardarPedido([FromBody] PedidoDTO pedidoDTO)
     {
         if (pedidoDTO.DetallesPedidos == null || pedidoDTO.DetallesPedidos.Count == 0)
