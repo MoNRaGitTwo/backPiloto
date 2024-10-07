@@ -1,6 +1,6 @@
 ﻿using DemoPilotoV1.BDD;
 using DemoPilotoV1.Clases;
-
+using DemoPilotoV1.DTOS;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -44,7 +44,7 @@ namespace DemoPilotoV1.Controllers
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] Users loginUser)
+        public IActionResult Login([FromBody] LoginDTO loginUser)
         {
             var user = _context.Users.FirstOrDefault(u => u.Nombre == loginUser.Nombre && u.Password == loginUser.Password);
 
@@ -53,7 +53,15 @@ namespace DemoPilotoV1.Controllers
                 return Unauthorized(new { message = "Usuario o contraseña inválidos" });
             }
 
-            return Ok(new { message = "Inicio de sesión exitoso" });
+            return Ok(new
+            {
+                id = user.Id,
+                nombre = user.Nombre,
+                direccion = user.Direccion,
+                telefono = user.Telefono,
+                deuda = user.Deuda,
+                message = "Inicio de sesión exitoso"
+            });
         }
     }
 }

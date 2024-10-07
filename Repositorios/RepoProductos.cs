@@ -1,35 +1,39 @@
 ﻿using DemoPilotoV1.BDD;
 using DemoPilotoV1.Clases;
 using Microsoft.EntityFrameworkCore;
+using MySql.Data.MySqlClient;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DemoPilotoV1.Repositorios
 {
     public class RepoProductos
     {
         private readonly BaseDeDatos _baseDeDatos;
+        private readonly string _connectionString;
 
         public RepoProductos(BaseDeDatos baseDeDatos)
         {
             _baseDeDatos = baseDeDatos;
+            _connectionString = _baseDeDatos.Database.GetDbConnection().ConnectionString; // Obtener la cadena de conexión desde el DbContext
         }
 
         public List<Product> ObtenerTodosLosProductos()
         {
             try
             {
-                return _baseDeDatos.ProductsDos.Select(p => new Product
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Price = p.Price,
-                    Stock = p.Stock,
-                    ImageData = p.ImageData,
-                    ImageFileName = p.ImageFileName,
-                    CodigoQR = p.CodigoQR,
-                 
-                }).ToList();
+                return _baseDeDatos.ProductsDos
+                    .Select(p => new Product
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Price = p.Price,
+                        Stock = p.Stock,
+                        ImageFileName = p.ImageFileName,
+                        CodigoQR = p.CodigoQR,
+                        ImageData = p.ImageData // Incluir los datos de la imagen directamente
+                    }).ToList();
             }
             catch (Exception ex)
             {
@@ -40,28 +44,31 @@ namespace DemoPilotoV1.Repositorios
 
         public Product ObtenerProductoPorId(int id)
         {
-            return _baseDeDatos.ProductsDos.FirstOrDefault(p => p.Id == id);
+            return _baseDeDatos.ProductsDos
+                .FirstOrDefault(p => p.Id == id);
         }
 
         public void GuardarProducto(string name, decimal price, int stock, byte[] imageData, string imageFileName, string codigoQR)
         {
-            var producto = new Product
+            using (var connection = new MySqlConnection(_connectionString))
             {
-                Name = name,
-                Price = price,
-                Stock = stock,
-                ImageData = imageData,  // Asignamos los datos de la imagen al objeto Product
-                ImageFileName = imageFileName,
-                CodigoQR = codigoQR
-            };
+                connection.Open();
 
-            // Guardamos el producto en la base de datos
-            _baseDeDatos.ProductsDos.Add(producto);
-            _baseDeDatos.SaveChanges();
+                var query = "INSERT INTO ProductsDos (Name, Price, Stock, ImageData, ImageFileName, CodigoQR) VALUES (@name, @price, @stock, @imageData, @imageFileName, @codigoQR)";
+
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@name", name);
+                    command.Parameters.AddWithValue("@price", price);
+                    command.Parameters.AddWithValue("@stock", stock);
+                    command.Parameters.AddWithValue("@imageData", imageData ?? (object)DBNull.Value); // Manejo de datos nulos
+                    command.Parameters.AddWithValue("@imageFileName", imageFileName);
+                    command.Parameters.AddWithValue("@codigoQR", codigoQR);
+
+                    command.ExecuteNonQuery();
+                }
+            }
         }
-
-
-
 
         public void EliminarProducto(int id)
         {
@@ -75,7 +82,9 @@ namespace DemoPilotoV1.Repositorios
 
         public Product EditarProducto(int id, string name, decimal price, int stock, byte[] imageData, string imageFileName)
         {
-            var producto = _baseDeDatos.ProductsDos.Find(id);
+            var producto = _baseDeDatos.ProductsDos
+                .FirstOrDefault(p => p.Id == id);
+
             if (producto != null)
             {
                 producto.Name = name;
@@ -85,12 +94,8 @@ namespace DemoPilotoV1.Repositorios
                 // Solo actualizar la imagen si se proporciona una nueva
                 if (imageData != null && imageData.Length > 0)
                 {
-                    producto.ImageData = imageData;
-                }
-
-                if (!string.IsNullOrEmpty(imageFileName))
-                {
                     producto.ImageFileName = imageFileName;
+                    producto.ImageData = imageData; // Actualizar los datos de la imagen
                 }
 
                 _baseDeDatos.SaveChanges();
@@ -133,9 +138,3 @@ namespace DemoPilotoV1.Repositorios
         }
     }
 }
-
-
-
-
-
-

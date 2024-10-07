@@ -2,8 +2,8 @@
 {
     public class PedidoDTO
     {
-        public int Id { get; set; }
-        public int ClienteId { get; set; }
+        public int Id { get; set; } // Añadir esta línea
+        public int UserId { get; set; }
         public DateTime FechaPedido { get; set; }
         public decimal Total { get; set; }
         public string Estado { get; set; }

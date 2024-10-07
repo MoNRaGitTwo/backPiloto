@@ -1,5 +1,5 @@
-﻿using DemoPilotoV1.Clases;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using DemoPilotoV1.Clases;
 
 namespace DemoPilotoV1.BDD
 {
@@ -13,6 +13,10 @@ namespace DemoPilotoV1.BDD
         public DbSet<Pedidos> Pedidos { get; set; }
         public DbSet<DetallePedidos> DetallesPedidos { get; set; }
         public DbSet<ProveedorProducto> ProveedorProductos { get; set; }
+
+        public DbSet<Reservas> Reservas { get; set; }
+
+        public DbSet<AudioFile> AudioFiles { get; set; }
 
         public BaseDeDatos(DbContextOptions<BaseDeDatos> options) : base(options) { }
 
@@ -41,6 +45,15 @@ namespace DemoPilotoV1.BDD
                 .HasOne(d => d.Producto)
                 .WithMany()
                 .HasForeignKey(d => d.ProductoId);
+
+            // Configuración de la tabla ProductsDos para asegurar el tipo de datos
+            modelBuilder.Entity<Product>()
+                .Property(p => p.ImageData)
+                .HasColumnType("LONGBLOB");
+
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Reservas>().ToTable("Reservas");
         }
     }
 }

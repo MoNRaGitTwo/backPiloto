@@ -46,7 +46,7 @@ namespace DemoPilotoV1.Controllers
             try
             {
                 _repoClientes.ActualizarDeudaCliente(request.ClienteId, request.NuevaDeuda);
-                return Ok("Deuda del cliente actualizada correctamente");
+                return Ok("Deuda del cliente actualizada correctamente -> Soy el controaldorCliente(back end)");
             }
             catch (Exception ex)
             {

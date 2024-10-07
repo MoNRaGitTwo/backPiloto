@@ -10,22 +10,10 @@ namespace DemoPilotoV1.Clases
         public string Name { get; set; }
         public decimal Price { get; set; }
         public int Stock { get; set; }
-       
-        public byte[] ImageData { get; set; } // Datos de la imagen
-
         public string ImageFileName { get; set; }
-
-        public string CodigoQR { get; set; } // Nueva propiedad
-
+        public byte[] ImageData { get; set; } // Datos de la imagen como LONGBLOB
+        public string CodigoQR { get; set; }
         public ICollection<ProveedorProducto> ProveedorProductos { get; set; } = new List<ProveedorProducto>();
-
-
-
-
-
-
-
-
     }
 
 }

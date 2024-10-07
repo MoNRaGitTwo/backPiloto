@@ -9,9 +9,7 @@ using System.Text.Json.Serialization;
 using DemoPilotoV1.Clases;
 using DemoPilotoV1.DTOS;
 using static System.Runtime.InteropServices.JavaScript.JSType;
-
-
-
+using Microsoft.AspNetCore.Http.Features;
 
 namespace DemoPilotoV1
 {
@@ -72,6 +70,16 @@ namespace DemoPilotoV1
             // Register the new repository for pedidos
             builder.Services.AddScoped<RepoPedidos>();  // Nueva línea para agregar el repositorio de pedidos
 
+            builder.Services.AddScoped<UsersRepository>();
+
+            builder.Services.AddScoped<RepoReservas>(); // nueva linea de  reserva barberia
+
+
+            builder.Services.Configure<FormOptions>(options =>
+            {
+                options.MultipartBodyLengthLimit = 268435456; // Tamaño máximo del cuerpo del multipart en bytes (256 MB)
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -87,9 +95,11 @@ namespace DemoPilotoV1
                 app.UseHsts();
             }
 
-           
+       
 
-        app.UseHttpsRedirection();
+
+
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
