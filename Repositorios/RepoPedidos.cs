@@ -58,5 +58,12 @@ namespace DemoPilotoV1.Repositorios
             _baseDeDatos.DetallesPedidos.RemoveRange(detalles);
             _baseDeDatos.SaveChanges();
         }
+        public List<Pedidos> ObtenerPedidosPorUsuarioId(int userId)
+        {
+            return _baseDeDatos.Pedidos
+                .Include(p => p.DetallesPedidos)
+                .Where(p => p.UserId == userId)
+                .ToList();
+        }
     }
 }

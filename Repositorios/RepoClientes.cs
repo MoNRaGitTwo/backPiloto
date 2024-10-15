@@ -50,10 +50,12 @@ namespace DemoPilotoV1.Repositorios
             _baseDeDatos.Compras.Add(compra);
             _baseDeDatos.SaveChanges();
         }
-
+        /*
         public List<Compras> ObtenerComprasCliente(int clienteId)
         {
             return _baseDeDatos.Compras.Where(c => c.ClienteId == clienteId).ToList();
-        }
+        }*/
+
+
     }
 }

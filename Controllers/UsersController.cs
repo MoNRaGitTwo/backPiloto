@@ -94,6 +94,22 @@ namespace DemoPilotoV1.Controllers
             return Ok(userDto);
         }
 
+        [HttpGet("ObtenerComprasUsuario/{userId}")]
+        [SwaggerOperation("Obtiene las compras de un usuario")]
+        public IActionResult ObtenerComprasUsuario(int userId)
+        {
+            try
+            {
+                var compras = _context.Compras.Where(c => c.UserId == userId).ToList();
+                return Ok(compras);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al obtener las compras del usuario: {ex.Message}");
+            }
+        }
+
+
 
     }
 }

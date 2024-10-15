@@ -72,7 +72,7 @@ namespace DemoPilotoV1.Controllers
             {
                 var compra = new Compras
                 {
-                    ClienteId = request.ClienteId,
+                    //ClienteId = request.ClienteId,
                     Fecha = DateTime.Now,
                     Detalle = request.Detalle,
                     Total = request.Total
@@ -86,7 +86,7 @@ namespace DemoPilotoV1.Controllers
                 return StatusCode(500, $"Error al registrar la compra: {ex.Message}");
             }
         }
-
+/*
         [HttpGet("ObtenerComprasCliente/{clienteId}")]
         [SwaggerOperation("Obtiene las compras de un cliente")]
         [SwaggerResponse(StatusCodes.Status200OK, "Compras obtenidas exitosamente")]
@@ -95,14 +95,14 @@ namespace DemoPilotoV1.Controllers
         {
             try
             {
-                var compras = _context.Compras.Where(c => c.ClienteId == clienteId).ToList();
+               // var compras = _context.Compras.Where(c => c.ClienteId == clienteId).ToList();
                 return Ok(compras);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Error al obtener las compras del cliente: {ex.Message}");
             }
-        }
+        }*/
 
        
     }

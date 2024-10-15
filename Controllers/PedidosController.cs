@@ -42,9 +42,41 @@ public class PedidosController : ControllerBase
         return Ok(pedidos);
     }
 
+    [HttpGet("user/{userId}")]
+    public ActionResult<List<PedidoDTO>> GetPedidosPorUsuario(int userId)
+    {
+        var pedidos = _repoPedidos.ObtenerPedidosPorUsuarioId(userId);
+
+        if (pedidos == null || !pedidos.Any())
+        {
+            return NotFound();
+        }
+
+        var pedidosDTO = pedidos.Select(p => new PedidoDTO
+        {
+            Id = p.Id,
+            UserId = p.UserId,
+            FechaPedido = p.FechaPedido,
+            Total = p.Total,
+            Estado = p.Estado,
+            DetallesPedidos = p.DetallesPedidos.Select(d => new DetallePedidoDTO
+            {
+                Id = d.Id,
+                PedidoId = d.PedidoId,
+                ProductoId = d.ProductoId,
+                Nombre = d.Nombre,
+                Cantidad = d.Cantidad,
+                Precio = d.Precio
+            }).ToList()
+        }).ToList();
+
+        return Ok(pedidosDTO);
+    }
 
 
-    [HttpGet("{id}")]
+
+
+    [HttpGet("{id}")]    
     public ActionResult<PedidoDTO> GetPedido(int id)
     {
         var pedido = _repoPedidos.ObtenerPedidoPorId(id);
