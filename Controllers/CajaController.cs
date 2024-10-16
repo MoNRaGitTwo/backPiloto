@@ -19,8 +19,7 @@ namespace DemoPilotoV1.Controllers
         }
 
         
-        [HttpPost("guardarCaja")]
-        
+        [HttpPost("guardarCaja")]    
         public IActionResult GuardarCaja([FromBody] Caja caja)
         {
             if (caja == null)
