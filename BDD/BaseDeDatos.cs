@@ -14,6 +14,8 @@ namespace DemoPilotoV1.BDD
         public DbSet<DetallePedidos> DetallesPedidos { get; set; }
         public DbSet<ProveedorProducto> ProveedorProductos { get; set; }
 
+        public DbSet<Caja> Caja { get; set; }
+
         public DbSet<Reservas> Reservas { get; set; }
 
         public DbSet<AudioFile> AudioFiles { get; set; }

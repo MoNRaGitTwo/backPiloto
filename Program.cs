@@ -75,6 +75,15 @@ namespace DemoPilotoV1
             builder.Services.AddScoped<RepoReservas>(); // nueva linea de  reserva barberia
 
 
+           builder.Services.AddScoped<BaseDeDatos>();
+
+            // Registrar RepoCaja como un servicio Scoped para que se cree una nueva instancia por cada solicitud.
+            builder.Services.AddScoped<RepoCaja>();
+
+            // Registrar otros servicios...
+            builder.Services.AddControllers();
+
+
             builder.Services.Configure<FormOptions>(options =>
             {
                 options.MultipartBodyLengthLimit = 268435456; // Tamaño máximo del cuerpo del multipart en bytes (256 MB)
