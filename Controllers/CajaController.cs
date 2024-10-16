@@ -2,6 +2,7 @@
 using DemoPilotoV1.Repositorios;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System;
 
 namespace DemoPilotoV1.Controllers
@@ -17,7 +18,9 @@ namespace DemoPilotoV1.Controllers
             _repoCaja = repoCaja;
         }
 
-        [HttpPost]
+        
+        [HttpPost("guardarCaja")]
+        
         public IActionResult GuardarCaja([FromBody] Caja caja)
         {
             if (caja == null)
@@ -36,7 +39,7 @@ namespace DemoPilotoV1.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("mostrarCaja")]
         public IActionResult ObtenerUltimaCaja()
         {
             var caja = _repoCaja.ObtenerUltimaCaja();
@@ -48,7 +51,7 @@ namespace DemoPilotoV1.Controllers
             return NotFound("No se encontró información de la caja.");
         }
 
-        [HttpPut]
+        [HttpPut("editarCaja")]
         public IActionResult ActualizarCaja([FromBody] Caja caja)
         {
             if (caja == null)
