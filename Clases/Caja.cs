@@ -7,6 +7,6 @@
         public decimal MontoCredito { get; set; }
         public decimal Gastos { get; set; }
         public decimal Extra { get; set; }
-        public DateTime FechaActualizacion { get; set; }
+       // public DateTime FechaActualizacion { get; set; }
     }
 }

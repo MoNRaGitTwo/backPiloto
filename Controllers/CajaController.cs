@@ -18,8 +18,8 @@ namespace DemoPilotoV1.Controllers
             _repoCaja = repoCaja;
         }
 
-        
-        [HttpPost("guardarCaja")]    
+
+        [HttpPost("guardarCaja")]
         public IActionResult GuardarCaja([FromBody] Caja caja)
         {
             if (caja == null)
@@ -29,7 +29,9 @@ namespace DemoPilotoV1.Controllers
 
             try
             {
+                // Guardar la nueva instancia de caja con los montos recibidos.
                 _repoCaja.GuardarCaja(caja);
+
                 return Ok("Datos de la caja guardados exitosamente.");
             }
             catch (Exception ex)
@@ -51,7 +53,7 @@ namespace DemoPilotoV1.Controllers
         }
 
         [HttpPut("editarCaja")]
-        public IActionResult ActualizarCaja([FromBody] Caja caja)
+        public IActionResult ActualizarCajaController([FromBody] Caja caja)
         {
             if (caja == null)
             {
