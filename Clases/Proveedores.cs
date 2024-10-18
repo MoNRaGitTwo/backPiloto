@@ -10,6 +10,9 @@ namespace DemoPilotoV1.Clases
         public string Nombre { get; set; }
         public string Telefono { get; set; }
 
+        [Column("dias")] // Esto especifica que la propiedad Dia se corresponde con la columna "dias" en la base de datos.
+        public string Dia { get; set; }
+
 
         public ICollection<ProveedorProducto> ProveedorProductos { get; set; } = new List<ProveedorProducto>();
     }

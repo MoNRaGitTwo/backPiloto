@@ -43,6 +43,13 @@ namespace DemoPilotoV1.Repositorios
                 _context.SaveChanges();
             }
         }
+
+        public List<Proveedores> ObtenerProveedoresPorDia(string dia)
+        {
+            return _context.Proveedores
+                .Where(p => p.Dia.Contains(dia, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
     }
 
 }

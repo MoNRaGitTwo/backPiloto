@@ -109,4 +109,21 @@ public class ProveedoresController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor: " + ex.Message);
         }
     }
+
+    [HttpGet("ProveedoresPorDia/{dia}")]
+    [SwaggerOperation("Obtiene los proveedores que pasan en un día específico")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Proveedores obtenidos exitosamente")]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError, "Error interno del servidor")]
+    public IActionResult ObtenerProveedoresPorDia(string dia)
+    {
+        try
+        {
+            var proveedores = _repoProveedores.ObtenerProveedoresPorDia(dia);
+            return Ok(proveedores);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor: " + ex.Message);
+        }
+    }
 }
